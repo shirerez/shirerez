@@ -26,3 +26,12 @@
     - name: Reboot if required
       ansible.windows.win_reboot:
       when: sql_install.reboot_required
+    
+    - name: Create MSSQL login and user
+      ansible.windows.win_shell: |
+        sqlcmd -S localhost -Q "IF NOT EXISTS (SELECT * FROM sys.server_principals WHERE name = 'mylogin') 
+        BEGIN 
+            CREATE LOGIN [mylogin] WITH PASSWORD=N'MyPassword123'; 
+            CREATE USER [myuser] FOR LOGIN [mylogin]; 
+            EXEC sp_addrolemember N'db_owner', N'myuser';
+        END"

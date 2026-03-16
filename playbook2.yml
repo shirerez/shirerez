@@ -1,22 +1,28 @@
 ---
 
 - name: install MS SQL from CIFS share
-  hosts: localhost
+  hosts: windows_servers
   gather_facts: false
 
   tasks:
     - name: mount cifs share to a drive
-      community.windows.win.mapped.drive:
-        state: present
-        drive_letter: 'N'
-        path: "\\path\\sql_installation"
+      #מיפוי של השיתוף המרוחק לכונן N באופן זמני.
+      ansible.windows.win_shell: |
+        net use N: \\path\sql_installation /user:DOMAIN\shareuser SharePassword /persistent:no
       register: drive_mapping
 
     - name: copy installation files locally
       ansible.windows.win_copy:
-        src: 'N:\\SQLServerInstall\\'
-        dest: 'C:\\SQLServerInstall\\'
+        src: 'N:\SQLServerInstall\*'
+        dest: 'C:\SQLServerInstall'
         remote_src: true 
     
     - name: run installation setup
-      ansible.windows.win_shell: 
+      ansible.windows.win_package: 
+        path: 'C:\SQLServerInstall\SQLServerSetup.exe'
+        arguments: '/Q /IACCEPTSQLSERVERLICENSETERMS /ACTION=Install /FEATURES=SQLEngine /INSTANCENAME=MSSQLSERVER /SQLSYSADMINACCOUNTS=Administrator'
+      register: sql_install
+
+    - name: Reboot if required
+      ansible.windows.win_reboot:
+      when: sql_install.reboot_required

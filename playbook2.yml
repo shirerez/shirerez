@@ -1,0 +1,22 @@
+---
+
+- name: install MS SQL from CIFS share
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: mount cifs share to a drive
+      community.windows.win.mapped.drive:
+        state: present
+        drive_letter: 'N'
+        path: "\\path\\sql_installation"
+      register: drive_mapping
+
+    - name: copy installation files locally
+      ansible.windows.win_copy:
+        src: 'N:\\SQLServerInstall\\'
+        dest: 'C:\\SQLServerInstall\\'
+        remote_src: true 
+    
+    - name: run installation setup
+      ansible.windows.win_shell: 

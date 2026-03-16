@@ -35,3 +35,4 @@
             CREATE USER [myuser] FOR LOGIN [mylogin]; 
             EXEC sp_addrolemember N'db_owner', N'myuser';
         END"
+        

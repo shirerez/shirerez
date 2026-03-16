@@ -1,0 +1,31 @@
+---
+
+- name: Create a Windows VM
+  hosts: localhotst
+  become: falsee
+  gather_facts: false 
+
+  pre_tasks:
+    - include_vars: vars.yml //קובץ שמכיל משתנים שנשתמש בהם בפלייבוק
+
+  tasks:
+    - name: create folder
+      community.vmware.vcenter_folder:
+        hostname: "{{ vcenter_hostname }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        datacenter_name: "{{ vcenter_datacenter }}"
+        folder_name: "{{ vcenter_destination_folder }}"
+        folder_type: vm
+        state: present
+
+    - name: create VM
+      community.vmware.vmware_guest:
+      hostname: "{{ vcenter_hostname }}"
+      username: "{{ vcenter_username }}"
+      password: "{{ vcenter_password }}"
+      datacenter_name: "{{ vcenter_datacenter }}"
+      name: "my_windows_vm"
+      folder: "{{ vcenter_destination_folder }}"
+      state: "{{ vm_state }}"
+      guest_id: "windows9_64Guest"
